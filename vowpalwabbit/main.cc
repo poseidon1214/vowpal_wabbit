@@ -15,6 +15,7 @@ license as described in the file LICENSE.
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #endif
+#include <rabit.h>
 #include <sys/timeb.h>
 #include "global_data.h"
 #include "parse_example.h"
@@ -28,6 +29,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
   try {
+    rabit::Init(argc, argv);
     vw *all = parse_args(argc, argv);
     struct timeb t_start, t_end;
     ftime(&t_start);
@@ -106,12 +108,14 @@ int main(int argc, char *argv[])
         }
     
     VW::finish(*all);
+    rabit::Finalize();
   } catch (exception& e) {
     // vw is implemented as a library, so we use 'throw exception()'
     // error 'handling' everywhere.  To reduce stderr pollution
     // everything gets caught here & the error message is printed
     // sans the excess exception noise, and core dump.
     cerr << "vw: " << e.what() << endl;
+    rabit::Finalize();
     exit(1);
   }
   return 0;

@@ -955,6 +955,14 @@ void add_to_args(vw& all, int argc, char* argv[])
 
 vw* parse_args(int argc, char *argv[])
 {
+
+  // ignore all the rabit parameters
+  for (int i = 0; i < argc; ++i) {
+    if (strncmp(argv[i], "rabit_", 6)) {
+      argc = i; break;
+    }
+  }
+  // normal allreduce
   vw* all = new vw();
 
   add_to_args(*all, argc, argv);

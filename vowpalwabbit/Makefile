@@ -1,7 +1,7 @@
 BINARIES = vw active_interactor
 MANPAGES = vw.1
 
-VWLIBS := -L. -l vw -l allreduce
+VWLIBS := -L. -l vw # -l allreduce
 STDLIBS = $(BOOST_LIBRARY) $(LIBS)
 
 all:

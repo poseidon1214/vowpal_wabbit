@@ -12,6 +12,7 @@ Alekh Agarwal and John Langford, with help Olivier Chapelle.
 #include <sys/timeb.h>
 #include <cmath>
 #include <stdint.h>
+#include <rabit.h>
 #include "accumulate.h"
 #include "global_data.h"
    
@@ -30,8 +31,8 @@ void accumulate(vw& all, string master_location, regressor& reg, size_t o) {
     {
       local_grad[i] = weights[stride*i+o];
     }
-
-  all_reduce<float, add_float>(local_grad, length, master_location, all.unique_id, all.total, all.node, all.socks);
+  rabit::Allreduce<rabit::op::Sum>(local_grad, length);
+      //all_reduce<float, add_float>(local_grad, length, master_location, all.unique_id, all.total, all.node, all.socks);
   for(uint32_t i = 0;i < length;i++) 
     {
       weights[stride*i+o] = local_grad[i];
@@ -41,7 +42,8 @@ void accumulate(vw& all, string master_location, regressor& reg, size_t o) {
 
 float accumulate_scalar(vw& all, string master_location, float local_sum) {
   float temp = local_sum;
-  all_reduce<float, add_float>(&temp, 1, master_location, all.unique_id, all.total, all.node, all.socks);
+  rabit::Allreduce<rabit::op::Sum>(&temp, 1);
+  //all_reduce<float, add_float>(&temp, 1, master_location, all.unique_id, all.total, all.node, all.socks);
   return temp;
 }
 
@@ -54,8 +56,8 @@ void accumulate_avg(vw& all, string master_location, regressor& reg, size_t o) {
 
   for(uint32_t i = 0;i < length;i++) 
       local_grad[i] = weights[stride*i+o];
-
-  all_reduce<float, add_float>(local_grad, length, master_location, all.unique_id, all.total, all.node, all.socks);
+  rabit::Allreduce<rabit::op::Sum>(local_grad, length);
+  //  all_reduce<float, add_float>(local_grad, length, master_location, all.unique_id, all.total, all.node, all.socks);
   for(uint32_t i = 0;i < length;i++) 
       weights[stride*i+o] = local_grad[i]/numnodes;
   delete[] local_grad;
@@ -92,7 +94,8 @@ void accumulate_weighted_avg(vw& all, string master_location, regressor& reg) {
   
 
   //First compute weights for averaging
-  all_reduce<float, add_float>(local_weights, length, master_location, all.unique_id, all.total, all.node, all.socks);
+  rabit::Allreduce<rabit::op::Sum>(local_weights, length);
+  //all_reduce<float, add_float>(local_weights, length, master_location, all.unique_id, all.total, all.node, all.socks);
 
   for(uint32_t i = 0;i < length;i++) //Compute weighted versions
     if(local_weights[i] > 0) {
@@ -107,8 +110,8 @@ void accumulate_weighted_avg(vw& all, string master_location, regressor& reg) {
       local_weights[i] = 0;
       weights[stride*i] = 0;
     }
-
-  all_reduce<float, add_float>(weights, length*stride, master_location, all.unique_id, all.total, all.node, all.socks);
+  rabit::Allreduce<rabit::op::Sum>(weights, length * stride);
+  //all_reduce<float, add_float>(weights, length*stride, master_location, all.unique_id, all.total, all.node, all.socks);
   
   delete[] local_weights;
 }

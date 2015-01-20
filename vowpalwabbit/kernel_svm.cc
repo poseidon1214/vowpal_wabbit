@@ -18,6 +18,7 @@ license as described in the file LICENSE.
 #if defined(__SSE2__) && !defined(VW_LDA_NO_SSE)
 #include <xmmintrin.h>
 #endif
+#include <rabit.h>
 
 #include "parse_example.h"
 #include "constant.h"
@@ -559,7 +560,8 @@ namespace KSVM
     size_t* sizes = (size_t*) calloc_or_die(all.total, sizeof(size_t));
     sizes[all.node] = b->space.end - b->space.begin;
     //cerr<<"Sizes = "<<sizes[all.node]<<" ";
-    all_reduce<size_t, add_size_t>(sizes, all.total, all.span_server, all.unique_id, all.total, all.node, all.socks);
+    rabit::Allreduce<rabit::op::Sum>(sizes, all.total);
+    //all_reduce<size_t, add_size_t>(sizes, all.total, all.span_server, all.unique_id, all.total, all.node, all.socks);
 
     size_t prev_sum = 0, total_sum = 0;
     for(size_t i = 0;i < all.total;i++) {
@@ -573,7 +575,10 @@ namespace KSVM
       queries = (char*) calloc_or_die(total_sum, sizeof(char));
       memcpy(queries + prev_sum, b->space.begin, b->space.end - b->space.begin);
       b->space.delete_v();
-      all_reduce<char, copy_char>(queries, total_sum, all.span_server, all.unique_id, all.total, all.node, all.socks);
+      // customized reduce handle, use handle class to be compatible with MPI type commit
+      rabit::Reducer<char, copy_char> red;
+      red.Allreduce(queries, total_sum);
+      //all_reduce<char, copy_char>(queries, total_sum, all.span_server, all.unique_id, all.total, all.node, all.socks);
 
       b->space.begin = queries;
       b->space.end = b->space.begin;

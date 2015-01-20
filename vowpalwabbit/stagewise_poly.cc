@@ -1,5 +1,6 @@
 #include <float.h>
 #include <cassert>
+#include <rabit.h>
 
 #include "gd.h"
 #include "rand48.h"
@@ -595,8 +596,10 @@ namespace StagewisePoly
        * But it's unclear what the right behavior is in general for either
        * case...
        */
-      all_reduce<uint8_t, reduce_min_max>(poly.depthsbits, depthsbits_sizeof(poly),
-          all.span_server, all.unique_id, all.total, all.node, all.socks);
+      rabit::Reducer<uint8_t, reduce_min_max> red;
+      red.Allreduce(poly.depthsbits, depthsbits_sizeof(poly));
+      //all_reduce<uint8_t, reduce_min_max>(poly.depthsbits, depthsbits_sizeof(poly),
+      //all.span_server, all.unique_id, all.total, all.node, all.socks);
 
       sum_input_sparsity_inc = (uint64_t)accumulate_scalar(all, all.span_server, (float)sum_input_sparsity_inc);
       sum_sparsity_inc = (uint64_t)accumulate_scalar(all, all.span_server, (float)sum_sparsity_inc);

@@ -9,7 +9,7 @@ license as described in the file LICENSE.
 #include <sstream>
 #include <math.h>
 #include <assert.h>
-
+#include <rabit.h>
 #include "global_data.h"
 #include "simple_label.h"
 #include "parser.h"
@@ -305,8 +305,8 @@ vw::vw()
   initial_weight = 0.0;
   initial_constant = 0.0;
 
-  unique_id = 0;
-  total = 1;
+  unique_id = rabit::GetRank();
+  total = rabit::GetWorldSize();
   node = 0;
 
   for (size_t i = 0; i < 256; i++)

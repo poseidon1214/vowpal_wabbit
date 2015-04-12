@@ -39,6 +39,7 @@ inline float sign(float w){ if (w < 0.) return -1.; else  return 1.;}
 
 void inner_update_proximal(update_data& d, float x, float& wref) {
   float* w = &wref;
+  /**d.update=predict-label, x is feature*/
   float gradient = d.update * x;
   float ng2 = w[W_G2] + gradient * gradient;
   float sigma = (sqrtf(ng2) - sqrtf(w[W_G2]))/ d.ftrl_alpha;
